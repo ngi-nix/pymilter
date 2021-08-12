@@ -10,16 +10,11 @@
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
     in {
       overlay = final: prev: { pymilter = (import ./default.nix { pkgs = final; }); };
-      packages = forAllSystems (system: {inherit (nixpkgsFor.${system}) pymilter; });
+      # FIXME: would be cool to modify pythonPackages
+      packages = forAllSystems (system: { inherit (nixpkgsFor.${system}) pymilter; });
       defaultPackage = forAllSystems (system: self.packages.${system}.pymilter);
-      checks = forAllSystems (system: { inherit (self.packages.${system}) pymilter; });
-      devShell = forAllSystems (system: nixpkgsFor.${system}.mkShell {
-
-        # FIXME, in this case, why can I import Milter, I thought only pymilter dependencies would be in the dev shell
-        # inputsFrom = [ self.packages.${system}.pymilter ];
-
-        inputsFrom = [ ];
-        packages = [ ];
-      });
+      checks = forAllSystems (system: {inherit (self.packages.${system}) pymilter; });
+      # FIXME: why can I import Milter (the pymilter module) in a the python interpreter of the dev shell
+      devShell = forAllSystems (system: self.packages.${system}.pymilter.override { inShell = true; });
     };
 }
