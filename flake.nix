@@ -3,22 +3,23 @@
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
-  outputs = { self, nixpkgs }: let pkgs = nixpkgs.outputs.legacyPackages.x86_64-linux; in {
-    packages.x86_64-linux.pymilter = pkgs.python3Packages.buildPythonPackage {
-      pname = "pymilter";
-      version = "1.0.5";
-      src = ./.;
-      propagatedBuildInputs = [ pkgs.libmilter ];
-      doCheck = false; # to avoid the missing `makemap` executable of Sendmail
-      pythonImportsCheck = [ "Milter" ];
-      meta.description = ''A python extension module to enable python scripts to attach to Sendmail's libmilter API, enabling filtering of messages as they arrive. Since it's a script, you can do anything you want to the message - screen out viruses, collect statistics, add or modify headers, etc. You can, at any point, tell Sendmail to reject, discard, or accept the message.
-      Additional python modules provide for navigating and modifying MIME parts, and sending DSNs or doing CBVs.'';
+  outputs = { self, nixpkgs }:
+    let
+      supportedSystems = [ "x86_64-linux" "x86_64-darwin" ];
+      forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
+      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
+    in {
+      overlay = final: prev: { pymilter = (import ./default.nix { pkgs = final; }); };
+      packages = forAllSystems (system: {inherit (nixpkgsFor.${system}) pymilter; });
+      defaultPackage = forAllSystems (system: self.packages.${system}.pymilter);
+      checks = forAllSystems (system: { inherit (self.packages.${system}) pymilter; });
+      devShell = forAllSystems (system: nixpkgsFor.${system}.mkShell {
+
+        # FIXME, in this case, why can I import Milter, I thought only pymilter dependencies would be in the dev shell
+        # inputsFrom = [ self.packages.${system}.pymilter ];
+
+        inputsFrom = [ ];
+        packages = [ ];
+      });
     };
-    defaultPackage.x86_64-linux = self.packages.x86_64-linux.pymilter;
-    checks.x86_64-linux.pymilter = self.packages.x86_64-linux.pymilter;
-    devShell.x86_64-linux = pkgs.mkShell {
-      inputsFrom = builtins.attrValues self.inputs;
-      packages = [ self.packages.x86_64-linux.pymilter ];
-    };
-  };
 }
