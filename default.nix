@@ -9,40 +9,9 @@ pkgs.python3Packages.buildPythonPackage {
   propagatedBuildInputs = [ pkgs.libmilter ];
   
   nativeBuildInputs = pkgs.lib.optionals pkgs.stdenv.isDarwin [ pkgs.unzip pkgs.patchelf pkgs.zip];
-  postBuild = pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
-        echo "Executing a post build hook on darwin systems to solve a dynamic linker issue"
-        cd dist/
-        echo "Unzip pymilter-1.0.5-cp39-cp39-darwin_x86_64.whl" >&2
-        unzip pymilter-1.0.5-cp39-cp39-darwin_x86_64.whl -d pymilter-1.0.5-cp39-cp39-darwin_x86_64
-        cd pymilter-1.0.5-cp39-cp39-darwin_x86_64
-        echo "Set the rpath to ${pkgs.libmilter}/lib" >&2
-        pathelf --set-rpath ${pkgs.libmilter}/lib milter.cpython-39-darwin.so
-        echo "Zip pymilter-1.0.5-cp39-cp39-darwin_x86_64.whl" >&2
-        zip -r pymilter-1.0.5-cp39-cp39-darwin_x86_64.whl ./
-        mv pymilter-1.0.5-cp39-cp39-darwin_x86_64.whl ../
-        cd ..
-        rm -rf pymilter-1.0.5-cp39-cp39-darwin_x86_64
-        cd ..
-        echo "End of the postBuild hook"
-      '';
-
-  # FYI: here is what works on Linux
-  # postBuild = ''
-  #     echo "Executing a post build hook on darwin systems to solve a dynamic linker issue"
-  #     cd dist/
-  #     echo "Unzip pymilter-1.0.5-cp39-cp39-linux_x86_64.whl" >&2
-  #     unzip pymilter-1.0.5-cp39-cp39-linux_x86_64.whl -d pymilter-1.0.5-cp39-cp39-linux_x86_64
-  #     cd pymilter-1.0.5-cp39-cp39-linux_x86_64
-  #     echo "Set the rpath to ${pkgs.libmilter}/lib" >&2
-  #     patchelf --set-rpath ${pkgs.libmilter}/lib milter.cpython-39-x86_64-linux-gnu.so
-  #     echo "Zip pymilter-1.0.5-cp39-cp39-linux_x86_64.whl" >&2
-  #     zip -r pymilter-1.0.5-cp39-cp39-linux_x86_64.whl ./
-  #     mv pymilter-1.0.5-cp39-cp39-linux_x86_64.whl ../
-  #     cd ..
-  #     rm -rf pymilter-1.0.5-cp39-cp39-linux_x86_64
-  #     cd ..
-  #     echo "End of the postBuild hook"
-  #   '';
+  postInstall = pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
+    find $out -name "*.so" -exec install_name_tool -change libmilter.dylib ${pkgs.libmilter}/lib/libmilter.dylib {} \;
+  '';
 
   doCheck = false;  # to avoid the missing `makemap` executable of Sendmail
   pythonImportsCheck = [ "Milter" ];
