@@ -29,6 +29,8 @@ buildPythonPackage {
     substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
     substituteInPlace Milter/config.py --replace "from ConfigParser import ConfigParser" "from configparser import ConfigParser"
+    substituteInPlace Milter/dsn.py --replace "from email.Message import Message" "from email.message import EmailMessage"
+    substituteInPlace Milter/dsn.py --replace "from email.Message import message" "from email.message import EmailMessage"
     '' else ''
     # NB: all other files have a try: import thread; except: import _thread
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
