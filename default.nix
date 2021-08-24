@@ -18,8 +18,7 @@
 buildPythonPackage {
   pname = "pymilter";
   version = version;
-  # FIXME: if devShell stuff
-  src = src;
+  src = if inShell then null else src;
   propagatedBuildInputs = [
     libmilter
     # A dependency of Milter/dns.py
