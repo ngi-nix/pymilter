@@ -14,7 +14,6 @@
   buildPythonPackage,
   pydns,
   bsddb3,
-  email ? null
 }:
 buildPythonPackage {
   pname = "pymilter";
@@ -24,7 +23,7 @@ buildPythonPackage {
     libmilter
     # A dependency of Milter/dns.py
     pydns
-  ] ++ (if version == "1.0.4" then [ email ] else [ ]);
+  ]
   postPatch = if version == "1.0.4" then ''
     substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'

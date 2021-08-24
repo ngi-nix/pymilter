@@ -2,40 +2,22 @@
   "nodes": {
     "nixpkgs": {
       "locked": {
-        "lastModified": 1629833587,
-        "narHash": "sha256-3pxCVsl0GK5srmaCkmf/jI8AK0YW6hw/hnRcR9zdJoE=",
+        "lastModified": 1629834317,
+        "narHash": "sha256-NSsIlBnrNbN6wj6getlB/jqNFm9W7CQml8/vrfj0MaU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c82702d8078014ee07498e3a51205f366e6dcfc0",
+        "rev": "adc409264c528b93cd4fb018825ff5ec62b17568",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "pymilter-1_0_4": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1555542470,
-        "narHash": "sha256-2EdoLweSyuwGmUFHdXmPFWNopQXKyzk25E5DrjuNEoE=",
-        "owner": "ngi-nix",
-        "repo": "pymilter",
-        "rev": "10fdccf3668d7538c3a5e50d48cabc90e7d9924a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ngi-nix",
-        "ref": "pymilter-1.0.4",
-        "repo": "pymilter",
         "type": "github"
       }
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "pymilter-1_0_4": "pymilter-1_0_4"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
