@@ -24,14 +24,7 @@ buildPythonPackage {
     # A dependency of Milter/dns.py
     pydns
   ];
-  postPatch = if version == "1.0.4" then ''
-    substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
-    substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
-    substituteInPlace Milter/config.py --replace "from ConfigParser import ConfigParser" "from configparser import ConfigParser"
-    substituteInPlace Milter/dsn.py --replace "from email.Message import Message" "from email.message import EmailMessage"
-    substituteInPlace Milter/dsn.py --replace "from email.Message import message" "from email.message import EmailMessage"
-    substituteInPlace Milter/dsn.py --replace "import dns" "import Milter.dns as dns"
-    '' else ''
+  postPatch = ''
     # NB: all other files have a try: import thread; except: import _thread
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
 
@@ -39,7 +32,13 @@ buildPythonPackage {
     #   while `makemap` is not available yet. See https://github.com/ngi-nix/ngi/issues/91
     rm testpolicy.py
     substituteInPlace test.py --replace 'import testpolicy' \'\'
-  '';
+    '' + (if version == "1.0.4" then ''
+    substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
+    substituteInPlace Milter/config.py --replace "from ConfigParser import ConfigParser" "from configparser import ConfigParser"
+    substituteInPlace Milter/dsn.py --replace "from email.Message import Message" "from email.message import EmailMessage"
+    substituteInPlace Milter/dsn.py --replace "from email.Message import message" "from email.message import EmailMessage"
+    substituteInPlace Milter/dsn.py --replace "import dns" "import Milter.dns as dns"
+    '' else "");
   nativeBuildInputs = lib.optionals stdenv.isDarwin [ unzip patchelf zip];
   postInstall = lib.optionalString stdenv.isDarwin ''
     find $out -name "*.so" -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {};
