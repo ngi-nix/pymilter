@@ -18,12 +18,12 @@
 buildPythonPackage {
   pname = "pymilter";
   version = version;
-  src = if inShell then null else src;
+  src = if inShell then null else ./.;
   propagatedBuildInputs = [
     libmilter
     # A dependency of Milter/dns.py
     pydns
-  ]
+  ];
   postPatch = if version == "1.0.4" then ''
     substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
