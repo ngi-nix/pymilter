@@ -24,7 +24,9 @@ buildPythonPackage {
     # A dependency of Milter/dns.py
     pydns
   ];
-  postPatch = if version == "1.0.4" then "" else ''
+  postPatch = if version == "1.0.4" then ''
+    substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
+    '' else ''
     echo "version = ${version}"
     ls 
     # NB: all other files have a try: import thread; except: import _thread
