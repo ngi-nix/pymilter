@@ -9,7 +9,11 @@
       forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
     in {
-      overlay = final: prev: { pymilter = (import ./default.nix { pkgs = final; }); };
+      overlay = final: prev: { pymilter = (final.callPackage ./default.nix {
+        # FIXME: not sure about the src dependency
+        src = ./.;
+        inherit (final.python3Packages) pydns bsddb3 buildPythonPackage;
+      }); };
       # FIXME: would be cool to modify pythonPackages
       packages = forAllSystems (system: { inherit (nixpkgsFor.${system}) pymilter; });
       defaultPackage = forAllSystems (system: self.packages.${system}.pymilter);

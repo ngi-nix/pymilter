@@ -1,17 +1,33 @@
-{
-  pkgs,
-  inShell ? false
+{ 
+  # cannot write : `src ? ./.` cause the path ends up not being the one intended
+  src,
+  version ? "1.0.5",
+  stdenv,
+  lib,
+  libmilter,
+  unzip,
+  patchelf,
+  zip,
+  libredirect,
+  inShell ? false,
+  # python dependencies
+  buildPythonPackage,
+  pydns,
+  bsddb3
 }:
-pkgs.python3Packages.buildPythonPackage {
+buildPythonPackage {
   pname = "pymilter";
-  version = "1.0.5";
-  src = if inShell then null else ./.;
+  version = version;
+  # FIXME: if devShell stuff
+  src = src;
   propagatedBuildInputs = [
-    pkgs.libmilter
+    libmilter
     # A dependency of Milter/dns.py
-    pkgs.python3Packages.pydns
+    pydns
   ];
-  postPatch = ''
+  postPatch = if version == "1.0.4" then "" else ''
+    echo "version = ${version}"
+    ls 
     # NB: all other files have a try: import thread; except: import _thread
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
 
@@ -20,17 +36,17 @@ pkgs.python3Packages.buildPythonPackage {
     rm testpolicy.py
     substituteInPlace test.py --replace 'import testpolicy' \'\'
   '';
-  nativeBuildInputs = pkgs.lib.optionals pkgs.stdenv.isDarwin [ pkgs.unzip pkgs.patchelf pkgs.zip];
-  postInstall = pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
-    find $out -name "*.so" -exec install_name_tool -change libmilter.dylib ${pkgs.libmilter}/lib/libmilter.dylib {};
+  nativeBuildInputs = lib.optionals stdenv.isDarwin [ unzip patchelf zip];
+  postInstall = lib.optionalString stdenv.isDarwin ''
+    find $out -name "*.so" -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {};
   '';
-  checkInputs = [ pkgs.python3Packages.bsddb3 ];
+  checkInputs = [ bsddb3 ];
   # CheckPhase needs an access to a dummy /etc/resolv.conf
   #   https://nixos.wiki/wiki/Packaging/Quirks_and_Caveats
-  preCheck = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
+  preCheck = lib.optionalString stdenv.isLinux ''
     echo "nameserver 127.0.0.1" > resolv.conf
     export NIX_REDIRECTS=/etc/resolv.conf=$(realpath resolv.conf) \
-    LD_PRELOAD=${pkgs.libredirect}/lib/libredirect.so
+    LD_PRELOAD=${libredirect}/lib/libredirect.so
   '';
   # FIXME: use tox during the checkPhase
   #   https://github.com/pypa/setuptools/issues/1684
@@ -48,6 +64,6 @@ pkgs.python3Packages.buildPythonPackage {
       A python extension module to enable python scripts to attach to Sendmail's libmilter API, enabling filtering of messages as they arrive. Since it's a script, you can do anything you want to the message - screen out viruses, collect statistics, add or modify headers, etc. You can, at any point, tell Sendmail to reject, discard, or accept the message.
 
       Additional python modules provide for navigating and modifying MIME parts, and sending DSNs or doing CBVs.'';
-    license = pkgs.lib.licenses.gpl2Only;
+    license = lib.licenses.gpl2Only;
   };
 }
