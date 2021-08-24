@@ -13,7 +13,8 @@
   # python dependencies
   buildPythonPackage,
   pydns,
-  bsddb3
+  bsddb3,
+  email ? null
 }:
 buildPythonPackage {
   pname = "pymilter";
@@ -23,12 +24,15 @@ buildPythonPackage {
     libmilter
     # A dependency of Milter/dns.py
     pydns
-  ];
+  ] ++ (if version == "1.0.4" then [ email ] else [ ]);
   postPatch = if version == "1.0.4" then ''
     substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
+    substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
+    substituteInPlace Milter/config.py --replace "from ConfigParser import ConfigParser" "from configparser import ConfigParser"
+    substituteInPlace Milter/dsn.py --replace "from email.Message import Message" "from email.message import EmailMessage"
+    substituteInPlace Milter/dsn.py --replace "from email.Message import message" "from email.message import EmailMessage"
+    substituteInPlace Milter/dsn.py --replace "import dns" "import Milter.dns as dns"
     '' else ''
-    echo "version = ${version}"
-    ls 
     # NB: all other files have a try: import thread; except: import _thread
     substituteInPlace Milter/greylist.py --replace 'import thread' 'import _thread'
 
