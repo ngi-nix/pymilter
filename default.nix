@@ -41,7 +41,8 @@ buildPythonPackage {
     '' else "");
   nativeBuildInputs = lib.optionals stdenv.isDarwin [ unzip patchelf zip];
   postInstall = lib.optionalString stdenv.isDarwin ''
-    find $out -name "*.so" -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {};
+    find ./ -name "*.so" -print0 -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {} \;
+    find $out -name "*.so" -print0 -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {} \;
   '';
   checkInputs = [ bsddb3 ];
   # CheckPhase needs an access to a dummy /etc/resolv.conf
