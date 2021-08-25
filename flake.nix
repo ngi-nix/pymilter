@@ -10,8 +10,6 @@
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
     in {
       overlay = final: prev: { pymilter = (final.callPackage ./default.nix {
-        # FIXME: not sure about the src dependency
-        src = ./.;
         inherit (final.python3Packages) pydns bsddb3 buildPythonPackage;
       }); };
       # FIXME: would be cool to modify pythonPackages
@@ -19,7 +17,6 @@
       defaultPackage = forAllSystems (system: self.packages.${system}.pymilter);
       # FIXME: check also for x86_64-darwin as soon as Hydra will check darwin derivations
       checks.x86_64-linux.pymilter = self.packages.x86_64-linux.pymilter;
-      # FIXME: why can I import Milter (the pymilter module) in a the python interpreter of the dev shell
       devShell = forAllSystems (system: self.packages.${system}.pymilter.override { inShell = true; });
     };
 }

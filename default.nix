@@ -1,7 +1,4 @@
-{ 
-  # cannot write : `src ? ./.` cause the path ends up not being the one intended
-  src,
-  version ? "1.0.5",
+{
   stdenv,
   lib,
   libmilter,
@@ -17,7 +14,7 @@
 }:
 buildPythonPackage {
   pname = "pymilter";
-  version = version;
+  version = "1.0.5";
   src = if inShell then null else ./.;
   propagatedBuildInputs = [
     libmilter
@@ -32,14 +29,8 @@ buildPythonPackage {
     #   while `makemap` is not available yet. See https://github.com/ngi-nix/ngi/issues/91
     rm testpolicy.py
     substituteInPlace test.py --replace 'import testpolicy' \'\'
-    '' + (if version == "1.0.4" then ''
-    substituteInPlace setup.py --replace "from distutils.core import setup, Extension" "from setuptools import setup, Extension"
-    substituteInPlace Milter/config.py --replace "from ConfigParser import ConfigParser" "from configparser import ConfigParser"
-    substituteInPlace Milter/dsn.py --replace "from email.Message import Message" "from email.message import EmailMessage"
-    substituteInPlace Milter/dsn.py --replace "from email.Message import message" "from email.message import EmailMessage"
-    substituteInPlace Milter/dsn.py --replace "import dns" "import Milter.dns as dns"
-    '' else "");
-  nativeBuildInputs = lib.optionals stdenv.isDarwin [ unzip patchelf zip];
+    '';
+  nativeBuildInputs = lib.optionals stdenv.isDarwin [ unzip zip];
   postInstall = lib.optionalString stdenv.isDarwin ''
     find ./ -name "*.so" -print0 -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {} \;
     find $out -name "*.so" -print0 -exec install_name_tool -change libmilter.dylib ${libmilter}/lib/libmilter.dylib {} \;
