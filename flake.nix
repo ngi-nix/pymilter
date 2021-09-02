@@ -17,6 +17,6 @@
       defaultPackage = forAllSystems (system: self.packages.${system}.pymilter);
       # FIXME: check also for x86_64-darwin as soon as Hydra will check darwin derivations
       checks.x86_64-linux.pymilter = self.packages.x86_64-linux.pymilter;
-      devShell = forAllSystems (system: self.packages.${system}.pymilter.override { inShell = true; });
+      devShell = self.defaultPackage;
     };
 }

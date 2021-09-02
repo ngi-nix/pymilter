@@ -6,7 +6,6 @@
   patchelf,
   zip,
   libredirect,
-  inShell ? false,
   # python dependencies
   buildPythonPackage,
   pydns,
@@ -15,7 +14,7 @@
 buildPythonPackage {
   pname = "pymilter";
   version = "1.0.5";
-  src = if inShell then null else ./.;
+  src = ./.;
   propagatedBuildInputs = [
     libmilter
     # A dependency of Milter/dns.py
